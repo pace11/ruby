@@ -1,0 +1,36 @@
+.header {
+  background: #448948;
+  height: 5em;
+  margin: auto;
+  overflow: hidden;
+}
+
+.header img {
+  padding: 5px;
+  padding-left: 40px;
+  height: 80px;
+  margin-left: -2em;
+}
+.header img:hover {
+  background: #427c45;
+}
+.kotak {
+  background: #d4edda;
+  border: 1px solid#c3e6cb;
+  border-radius: 5px;
+  width: 98%;
+  margin: auto;
+  overflow: hidden
+}
+.kotak h1,h2,h3,p  {
+  font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  color: #448948;
+  padding: 10px;
+}
+.kotak-isi {
+  border: 5px solid#c3e6cb;
+  border-radius: 5px;
+  width: 98%;
+  margin: auto;
+  overflow: hidden
+}

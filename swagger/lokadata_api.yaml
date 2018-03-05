@@ -1,0 +1,2591 @@
+swagger: '2.0'
+info:
+  description: Api server for lokadata dashboard.
+  version: 1.2.0
+  title: Lokadata API
+  contact:
+    email: hello@iyank4.com
+  license:
+    name: UNLICENSED
+host: dev.lokadata.id
+basePath: /devapi/
+
+tags:
+  - name: auth
+    description: Authentication
+  - name: warehouse
+    description: Gudang data
+  - name: catalog
+    description: Katalog data
+  - name: cluster
+    description: Group (Folder) dari katalog data
+  - name: category
+    description: Kategori data
+  - name: custom
+    description: Not sure yet
+  - name: tags
+    description: Data tag
+  - name: area
+    description: Data Area
+  - name: user
+    description: Operations about user
+  - name: client
+    description: Data Klien
+  - name: store
+    description: Pembelian
+  - name: graph
+    description: Graph about user
+
+schemes:
+  - https
+
+paths:
+  /login:
+    post:
+      tags:
+      - auth
+      consumes:
+        - application/x-www-form-urlencoded
+      parameters:
+        - name: username
+          in: formData
+          type: string
+          required: true
+        - name: password
+          in: formData
+          type: string
+          required: true
+      responses:
+        200:
+          description: Valid response
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                description: Return true on success
+              message:
+                type: string
+                description: Success or error message
+              user:
+                $ref: '#/definitions/AuthUser'
+  /logout:
+    post:
+      tags:
+      - auth
+      consumes:
+        - application/x-www-form-urlencoded
+      parameters:
+        - name: id
+          in: formData
+          type: integer
+          description: User ID
+          required: true
+        - name: token
+          in: formData
+          type: string
+          description: Session token
+          required: true
+      responses:
+        200:
+          description: Valid response
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                description: Return true on success
+              message:
+                type: string
+                description: Success or error message
+  /register:
+    post:
+      tags:
+      - auth
+      consumes:
+        - application/x-www-form-urlencoded
+      parameters:
+        - name: username
+          in: formData
+          type: string
+          required: true
+        - name: email
+          in: formData
+          type: string
+          required: true
+        - name: password
+          in: formData
+          type: string
+          required: true
+      responses:
+        200:
+          description: Valid response
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                description: Return true on success
+              message:
+                type: string
+                description: Success or error message
+  /reset-password:
+    post:
+      tags:
+      - auth
+      consumes:
+        - application/x-www-form-urlencoded
+      parameters:
+        - name: username
+          in: formData
+          type: string
+          required: true
+      responses:
+        200:
+          description: Valid response
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                description: Return true on success
+              message:
+                type: string
+                description: Success or error message
+
+  /warehouse/autocomplete:
+    get:
+      tags:
+        - warehouse
+      description: ''
+      summary: CKAN dataset name
+      parameters:
+        - name: callback
+          in: query
+          type: string
+          required: false
+          description: JSONP callback
+        - name: search
+          in: query
+          type: string
+          required: true
+          description: Search string
+        - name: category
+          in: query
+          type: string
+          required: false
+          description: Category name
+        - name: limit
+          in: query
+          type: integer
+          required: false
+          description: 'Result limit, default 10'
+      produces:
+        - application/json
+        - application/javascript
+      responses:
+        '200':
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/WhAutocomplete'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/StatusResponse'
+  /warehouse/categories:
+    get:
+      tags:
+        - warehouse
+      summary: CKAN Category
+      parameters:
+        - name: callback
+          in: query
+          type: string
+          required: false
+          description: JSONP callback
+      produces:
+        - application/json
+        - application/javascript
+      responses:
+        '200':
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/WhCategory'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/StatusResponse'
+  /warehouse:
+    get:
+      tags:
+        - warehouse
+      summary: CKAN dataset
+      parameters:
+        - name: callback
+          in: query
+          type: string
+          required: false
+          description: JSONP callback
+        - name: search
+          in: query
+          required: false
+          description: Search string
+          type: string
+        - name: category
+          in: query
+          type: string
+          required: false
+          description: Category name
+        - name: limit
+          in: query
+          type: integer
+          required: false
+          description: 'Result limit, default 25'
+        - name: offset
+          in: query
+          type: integer
+          required: false
+          description: 'Result offset, default 0'
+      produces:
+        - application/json
+        - application/javascript
+      responses:
+        '200':
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/WhDataset'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/StatusResponse'
+  '/warehouse/{uuid}':
+    get:
+      tags:
+        - warehouse
+      parameters:
+        - name: callback
+          in: query
+          type: string
+          required: false
+          description: JSONP callback
+        - name: uuid
+          in: path
+          type: string
+          required: true
+          description: CKAN Dataset UUID
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/WhDataset'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/StatusResponse'
+  '/warehouse/resource/{uuid}':
+    get:
+      tags:
+        - warehouse
+      parameters:
+        - name: callback
+          in: query
+          type: string
+          required: false
+          description: JSONP callback
+        - name: uuid
+          in: path
+          type: string
+          required: true
+          description: CKAN Resource UUID
+      produces:
+        - application/json
+        - application/javascript
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/WhResource'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/StatusResponse'
+
+  /category:
+    get:
+      tags:
+        - category
+      summary: Category data
+      parameters:
+        - name: callback
+          in: query
+          type: string
+          required: false
+          description: JSONP callback
+        - name: search
+          in: query
+          type: string
+          required: false
+          description: Search string
+        - name: only_active
+          in: query
+          type: boolean
+          required: false
+          description: Default true
+        - name: limit
+          in: query
+          type: integer
+          required: false
+          description: 'Result limit, default 25'
+        - name: offset
+          in: query
+          type: integer
+          required: false
+          description: 'Result offset, default 0'
+      produces:
+        - application/json
+        - application/javascript
+      responses:
+        '200':
+          description: Category data
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/CategoryResult'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/StatusResponse'
+    post:
+      tags:
+        - category
+      summary: Add new category
+      consumes:
+        - multipart/form-data
+      parameters:
+        - name: title
+          in: formData
+          type: string
+          required: true
+          description: Category title
+        - name: image
+          in: formData
+          type: file
+          required: false
+          description: Image file
+        - name: sequence
+          in: formData
+          type: integer
+          required: false
+          description: Order number
+        - name: active
+          in: formData
+          type: boolean
+          required: false
+          description: Default true
+        - name: parent_id
+          in: formData
+          type: integer
+          required: false
+          description: Parent category ID
+      produces:
+        - application/json
+      responses:
+        default:
+          description: '200 OK, Saved'
+          schema:
+            $ref: '#/definitions/StatusResponse'
+  '/category/{id}':
+    get:
+      tags:
+        - category
+      parameters:
+        - name: callback
+          in: query
+          type: string
+          required: false
+          description: JSONP callback
+        - name: id
+          in: path
+          type: string
+          required: true
+          description: Category ID
+      produces:
+        - application/json
+        - application/javascript
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/Category'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/StatusResponse'
+    post:
+      tags:
+        - category
+      summary: Update category
+      consumes:
+        - multipart/form-data
+      parameters:
+        - name: id
+          in: path
+          type: integer
+          required: true
+          description: Category ID
+        - name: title
+          in: formData
+          type: string
+          required: false
+          description: Category Title
+        - name: image
+          in: formData
+          type: file
+          required: false
+          description: Image file
+        - name: sequence
+          in: formData
+          type: integer
+          required: false
+          description: Order number
+        - name: active
+          in: formData
+          type: boolean
+          required: false
+          description: Default true
+        - name: parent_id
+          in: formData
+          type: integer
+          required: false
+          description: Parent category ID
+      produces:
+        - application/json
+      responses:
+        default:
+          description: '200 OK, Updated'
+          schema:
+            $ref: '#/definitions/StatusResponse'
+    delete:
+      tags:
+        - category
+      summary: Delete category
+      parameters:
+        - name: callback
+          in: query
+          type: string
+          required: false
+          description: JSONP callback
+        - name: id
+          in: path
+          type: integer
+          required: true
+          description: Category ID
+        - name: confirm_id
+          in: query
+          type: integer
+          required: true
+          description: Confirm Category ID
+      responses:
+        default:
+          description: '200 OK, Deleted'
+          schema:
+            $ref: '#/definitions/StatusResponse'
+
+  /tag:
+    get:
+      tags:
+        - tags
+      summary: Tag data
+      parameters:
+        - name: callback
+          in: query
+          type: string
+          required: false
+          description: JSONP callback
+        - name: search
+          in: query
+          type: string
+          required: false
+          description: Search string
+        - name: limit
+          in: query
+          type: integer
+          required: false
+          description: 'Result limit, default 25'
+        - name: offset
+          in: query
+          type: integer
+          required: false
+          description: 'Result offset, default 0'
+      produces:
+        - application/json
+        - application/javascript
+      responses:
+        '200':
+          description: Tag data
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Tag'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/StatusResponse'
+    post:
+      tags:
+        - tags
+      summary: Add new Tag
+      consumes:
+        - application/x-www-form-urlencoded
+      parameters:
+        - name: title
+          in: formData
+          type: string
+          required: true
+          description: Tag title
+      produces:
+        - application/json
+      responses:
+        default:
+          description: '200 OK, Saved'
+          schema:
+            $ref: '#/definitions/StatusResponse'
+  '/tag/{id}':
+    get:
+      tags:
+        - tags
+      parameters:
+        - name: callback
+          in: query
+          type: string
+          required: false
+          description: JSONP callback
+        - name: id
+          in: path
+          type: string
+          required: true
+          description: Tag ID
+      produces:
+        - application/json
+        - application/javascript
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/Tag'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/StatusResponse'
+    post:
+      tags:
+        - tags
+      summary: Update Tag
+      consumes:
+        - application/x-www-form-urlencoded
+      parameters:
+        - name: id
+          in: path
+          type: integer
+          required: true
+          description: Tag ID
+        - name: title
+          in: formData
+          type: string
+          required: true
+          description: Tag Title
+      produces:
+        - application/json
+      responses:
+        default:
+          description: '200 OK, Updated'
+          schema:
+            $ref: '#/definitions/StatusResponse'
+    delete:
+      tags:
+        - tags
+      summary: Delete Tag
+      parameters:
+        - name: callback
+          in: query
+          type: string
+          required: false
+          description: JSONP callback
+        - name: id
+          in: path
+          type: integer
+          required: true
+          description: Tag
+        - name: confirm_id
+          in: query
+          type: integer
+          required: true
+          description: Confirm Tag ID
+      produces:
+        - application/json
+        - application/javascript
+      responses:
+        default:
+          description: '200 OK, Deleted'
+          schema:
+            $ref: '#/definitions/StatusResponse'
+
+  /area:
+    get:
+      tags:
+        - area
+      summary: Area data
+      parameters:
+        - name: callback
+          in: query
+          type: string
+          required: false
+          description: JSONP callback
+        - name: limit
+          in: query
+          type: integer
+          required: false
+          description: 'Result limit, default 25'
+        - name: offset
+          in: query
+          type: integer
+          required: false
+          description: 'Result offset, default 0'
+      produces:
+        - application/json
+        - application/javascript
+      responses:
+        '200':
+          description: Tag data
+          schema:
+            $ref: '#/definitions/AreaResult'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/StatusResponse'
+    post:
+      tags:
+        - area
+      summary: Add new Area
+      consumes:
+        - application/x-www-form-urlencoded
+      parameters:
+        - name: title
+          in: formData
+          type: string
+          required: true
+          description: Area title
+        - name: sequence
+          in: formData
+          type: integer
+          required: false
+          description: Order number
+      produces:
+        - application/json
+      responses:
+        default:
+          description: '200 OK, Saved'
+          schema:
+            $ref: '#/definitions/StatusResponse'
+  '/area/{id}':
+    get:
+      tags:
+        - area
+      parameters:
+        - name: callback
+          in: query
+          type: string
+          required: false
+          description: JSONP callback
+        - name: id
+          in: path
+          type: string
+          required: true
+          description: Area ID
+      produces:
+        - application/json
+        - application/javascript
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/Area'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/StatusResponse'
+    post:
+      tags:
+        - area
+      summary: Update Area
+      consumes:
+        - application/x-www-form-urlencoded
+      parameters:
+        - name: id
+          in: path
+          type: integer
+          required: true
+          description: Area ID
+        - name: title
+          in: formData
+          type: string
+          required: false
+          description: Area Title
+        - name: sequence
+          in: formData
+          type: integer
+          required: false
+          description: Order number
+      produces:
+        - application/json
+      responses:
+        default:
+          description: '200 OK, Updated'
+          schema:
+            $ref: '#/definitions/StatusResponse'
+    delete:
+      tags:
+        - area
+      summary: Delete Area
+      parameters:
+        - name: callback
+          in: query
+          type: string
+          required: false
+          description: JSONP callback
+        - name: id
+          in: path
+          type: integer
+          required: true
+          description: Area ID
+        - name: confirm_id
+          in: query
+          type: integer
+          required: true
+          description: Confirm Area ID
+      produces:
+        - application/json
+        - application/javascript
+      responses:
+        default:
+          description: '200 OK, Deleted'
+          schema:
+            $ref: '#/definitions/StatusResponse'
+
+  /catalog:
+    get:
+      tags:
+        - catalog
+      summary: 'Get, Search, Filter Catalog data'
+      parameters:
+        - name: callback
+          in: query
+          type: string
+          required: false
+          description: JSONP callback
+        - name: search
+          in: query
+          type: string
+          required: false
+          description: Search query
+        - name: status
+          in: query
+          type: string
+          required: false
+          description: 'Comma seperated default: 1,2'
+        - name: category_id
+          in: query
+          type: string
+          required: false
+          description: Filter by Category
+        - name: area_id
+          in: query
+          type: string
+          required: false
+          description: Filter by Area
+        - name: favourite
+          in: query
+          type: boolean
+          required: false
+          description: Filter by Favourite if user_id is set
+        - name: limit
+          in: query
+          type: integer
+          required: false
+          description: 'Result limit, default 25'
+        - name: offset
+          in: query
+          type: integer
+          required: false
+          description: 'Result offset, default 0'
+      produces:
+        - application/json
+        - application/javascript
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/CatalogResult'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/StatusResponse'
+    post:
+      tags:
+        - catalog
+      summary: Add new Catalog
+      consumes:
+        - application/x-www-form-urlencoded
+      parameters:
+        - name: title
+          in: formData
+          type: string
+          required: true
+          description: Catalog title
+        - name: excerpt
+          in: formData
+          type: string
+          required: true
+          description: 'Excerpt / Short description'
+        - name: description
+          in: formData
+          type: string
+          required: true
+          description: Long description
+        - name: source_text
+          in: formData
+          type: string
+          required: true
+          description: 'Source of data'
+        - name: source_url
+          in: formData
+          type: string
+          required: true
+          description: 'Link to source of data'
+        - name: status
+          in: formData
+          type: integer
+          required: true
+          description: 'Status code, 0: disabled 1: active, 2: public'
+        - name: category_id
+          in: formData
+          type: integer
+          required: true
+          description: Category ID
+        - name: tag_ids
+          in: formData
+          type: string
+          required: true
+          description: 'Comma seperated Tag ID: 1,2,3'
+        - name: detail
+          in: formData
+          type: array
+          items:
+            type: string
+          required: true
+          description: 'JSON [{area_id, uuid, title, column_names, sequence}]'
+      produces:
+        - application/json
+      responses:
+        default:
+          description: '200 OK, Saved'
+          schema:
+            $ref: '#/definitions/StatusResponse'
+  '/catalog/{id}':
+    get:
+      tags:
+        - catalog
+      parameters:
+        - name: callback
+          in: query
+          type: string
+          required: false
+          description: JSONP callback
+        - name: id
+          in: path
+          required: true
+          type: integer
+          description: Catalog ID
+      produces:
+        - application/json
+        - application/javascript
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/Catalog'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/StatusResponse'
+    post:
+      tags:
+        - catalog
+      summary: Update Catalog
+      consumes:
+        - application/x-www-form-urlencoded
+      parameters:
+        - name: id
+          in: path
+          type: integer
+          required: true
+          description: Catalog ID
+        - name: title
+          in: formData
+          type: string
+          required: false
+          description: Catalog title
+        - name: description
+          in: formData
+          type: string
+          required: false
+          description: Catalog description
+        - name: header_alias
+          in: formData
+          type: string
+          required: false
+          description: 'JSON data [''field_name'' => ''Alias'']'
+        - name: status
+          in: formData
+          type: integer
+          required: false
+          description: 'Status code, 0: disabledm 1: active, 2: public'
+        - name: category_id
+          in: formData
+          type: integer
+          required: false
+          description: Category ID
+        - name: resources
+          in: formData
+          type: array
+          items:
+            type: string
+          required: false
+          description: 'Array of Area ID and CKAN Resource UUID {area_id: ?, uuid: ?}'
+      produces:
+        - application/json
+      responses:
+        default:
+          description: '200 OK, Updated'
+          schema:
+            $ref: '#/definitions/StatusResponse'
+    delete:
+      tags:
+        - catalog
+      summary: Delete Catalog
+      parameters:
+        - name: callback
+          in: query
+          type: string
+          required: false
+          description: JSONP callback
+        - name: id
+          in: path
+          type: integer
+          required: true
+          description: Catalog ID
+        - name: confirm_id
+          in: query
+          type: integer
+          required: true
+          description: 'Catalog ID, Confirmation'
+      responses:
+        default:
+          description: '200 OK, Deleted'
+          schema:
+            $ref: '#/definitions/StatusResponse'
+  '/catalog/{id}/{detail_id}':
+    get:
+      tags:
+        - catalog
+      parameters:
+        - name: callback
+          in: query
+          type: string
+          required: false
+          description: JSONP callback
+        - name: id
+          in: path
+          required: true
+          type: integer
+          description: Catalog ID
+        - name: detail_id
+          in: path
+          required: true
+          type: integer
+          description: Catalog detail ID
+      produces:
+        - application/json
+        - application/javascript
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/CatalogData'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/StatusResponse'
+    post:
+      tags:
+        - catalog
+      summary: Update Catalog
+      consumes:
+        - application/x-www-form-urlencoded
+      parameters:
+        - name: id
+          in: path
+          type: integer
+          required: true
+          description: Catalog ID
+        - name: detail_id
+          in: path
+          type: integer
+          required: true
+          description: Catalog detail ID
+        - name: title
+          in: formData
+          type: string
+          required: false
+          description: Catalog detail title
+        - name: area_id
+          in: formData
+          type: integer
+          required: false
+          description: Area ID
+        - name: res_uuid
+          in: formData
+          type: string
+          required: false
+          description: CKAN Resource UUID
+        - name: sequence
+          in: formData
+          type: integer
+          required: false
+          description: Order number
+      produces:
+        - application/json
+      responses:
+        default:
+          description: '200 OK, Updated'
+          schema:
+            $ref: '#/definitions/StatusResponse'
+    delete:
+      tags:
+        - catalog
+      summary: Delete Catalog
+      parameters:
+        - name: callback
+          in: query
+          type: string
+          required: false
+          description: JSONP callback
+        - name: id
+          in: path
+          type: integer
+          required: true
+          description: Catalog ID
+        - name: detail_id
+          in: path
+          type: integer
+          required: true
+          description: Catalog detail ID
+        - name: confirm_id
+          in: query
+          type: integer
+          required: true
+          description: 'Catalog detail ID, Confirmation'
+      responses:
+        default:
+          description: '200 OK, Deleted'
+          schema:
+            $ref: '#/definitions/StatusResponse'
+  /catalog/autocomplete:
+    get:
+      tags:
+        - catalog
+      parameters:
+        - name: callback
+          in: query
+          type: string
+          required: false
+          description: JSONP callback
+        - name: search
+          in: query
+          type: string
+          required: false
+          description: Search String
+        - name: category_id
+          in: query
+          type: string
+          required: false
+          description: Filter by Category
+        - name: area_id
+          in: query
+          type: string
+          required: false
+          description: Filter by Area
+        - name: user_id
+          in: query
+          type: string
+          required: false
+          description: Filter by User
+        - name: limit
+          in: query
+          type: integer
+          required: false
+          description: 'Result limit, default 10'
+      produces:
+        - application/json
+        - application/javascript
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/CatalogAutocomplete'
+  '/catalog/data/{id}':
+    get:
+      tags:
+        - catalog
+      parameters:
+        - name: id
+          in: path
+          type: integer
+          required: true
+          description: Catalog ID
+      produces:
+        - text/csv
+      responses:
+        '200':
+          description: CSV File Content
+  '/catalog/favourite/{catalog_id}':
+    put:
+      tags:
+        - catalog
+      parameters:
+        - name: catalog_id
+          in: path
+          required: true
+          type: integer
+          description: Catalog ID
+        - name: callback
+          in: query
+          type: string
+          required: false
+          description: JSONP callback
+      produces:
+        - application/json
+      responses:
+        default:
+          description: '200 OK, Saved'
+          schema:
+            $ref: '#/definitions/StatusResponse'
+    delete:
+      tags:
+        - catalog
+      parameters:
+        - name: catalog_id
+          in: path
+          required: true
+          type: integer
+          description: Catalog ID
+        - name: callback
+          in: query
+          type: string
+          required: false
+          description: JSONP callback
+      produces:
+        - application/json
+      responses:
+        default:
+          description: '200 OK, Saved'
+          schema:
+            $ref: '#/definitions/StatusResponse'
+
+  /cluster:
+    get:
+      tags:
+        - cluster
+      parameters:
+        - name: callback
+          in: query
+          type: string
+          required: false
+          description: JSONP callback
+        - name: search
+          in: query
+          type: string
+          required: false
+          description: Search string
+        - name: status
+          in: query
+          type: string
+          required: false
+          description: 'Comma seperated default: 1,2'
+        - name: category_id
+          in: query
+          type: string
+          required: false
+          description: Filter by Category
+        - name: area_id
+          in: query
+          type: string
+          required: false
+          description: Filter by Area
+        - name: user_id
+          in: query
+          type: string
+          required: false
+          description: Filter by User
+        - name: limit
+          in: query
+          type: integer
+          required: false
+          description: 'Result limit, default 25'
+        - name: offset
+          in: query
+          type: integer
+          required: false
+          description: 'Result offset, default 0'
+      produces:
+        - application/json
+        - application/javascript
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Cluster'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/StatusResponse'
+    post:
+      tags:
+        - cluster
+      consumes:
+        - application/x-www-form-urlencoded
+      parameters:
+        - name: title
+          in: formData
+          type: string
+          required: false
+          description: Cluster Title
+        - name: status
+          in: formData
+          type: integer
+          required: false
+          description: "0: disabled, 1: active, 2: public"
+      produces:
+        - application/json
+      responses:
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/StatusResponse'
+  '/cluster/{id}':
+    get:
+      tags:
+        - cluster
+      parameters:
+        - name: callback
+          in: query
+          type: string
+          required: false
+          description: JSONP callback
+        - name: id
+          in: path
+          type: string
+          required: true
+          description: Cluster ID
+      produces:
+        - application/json
+        - application/javascript
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/Cluster'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/StatusResponse'
+    post:
+      tags:
+        - cluster
+      consumes:
+        - application/x-www-form-urlencoded
+      parameters:
+        - name: id
+          in: path
+          type: integer
+          required: true
+          description: Cluster ID
+        - name: title
+          in: formData
+          type: string
+          required: false
+          description: Cluster Title
+        - name: status
+          in: formData
+          type: integer
+          required: false
+          description: "0: disabled, 1: active, 2: public"
+      produces:
+        - application/json
+      responses:
+        default:
+          description: '200, OK'
+          schema:
+            $ref: '#/definitions/StatusResponse'
+    delete:
+      tags:
+        - cluster
+      parameters:
+        - name: callback
+          in: query
+          type: string
+          required: false
+          description: JSONP callback
+        - name: id
+          in: path
+          type: string
+          required: true
+          description: Cluster ID
+        - name: confirm_id
+          in: query
+          type: string
+          required: true
+          description: Confirm Cluster ID
+      responses:
+        default:
+          description: '200, OK'
+          schema:
+            $ref: '#/definitions/StatusResponse'
+  '/cluster/{id}/{detail_id}':
+    get:
+      tags:
+        - cluster
+      parameters:
+        - name: callback
+          in: query
+          type: string
+          required: false
+          description: JSONP callback
+        - name: id
+          in: path
+          type: string
+          required: true
+          description: Cluster ID
+        - name: detail_id
+          in: path
+          type: string
+          required: true
+          description: Cluster detail ID
+      produces:
+        - application/json
+        - application/javascript
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/ClusterData'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/StatusResponse'
+    post:
+      tags:
+        - cluster
+      consumes:
+        - application/x-www-form-urlencoded
+      parameters:
+        - name: id
+          in: path
+          type: integer
+          required: true
+          description: Cluster ID
+        - name: detail_id
+          in: path
+          type: integer
+          required: true
+          description: Cluster detail ID
+        - name: title
+          in: formData
+          type: string
+          required: false
+          description: Cluster detail Title
+        - name: catalog_id
+          in: formData
+          type: integer
+          required: false
+          description: Catalog ID
+      produces:
+        - application/json
+      responses:
+        default:
+          description: '200, OK'
+          schema:
+            $ref: '#/definitions/StatusResponse'
+    delete:
+      tags:
+        - cluster
+      parameters:
+        - name: callback
+          in: query
+          type: string
+          required: false
+          description: JSONP callback
+        - name: id
+          in: path
+          type: integer
+          required: true
+          description: Cluster ID
+        - name: detail_id
+          in: path
+          type: integer
+          required: true
+          description: Cluster detail ID
+        - name: confirm_id
+          in: query
+          type: integer
+          required: true
+          description: Confirm Cluster detail ID
+      responses:
+        default:
+          description: '200, OK'
+          schema:
+            $ref: '#/definitions/StatusResponse'
+
+  /cluster-catalog:
+    get:
+      tags:
+        - custom
+      summary: 'For map'
+      parameters:
+        - name: callback
+          in: query
+          type: string
+          required: false
+          description: JSONP callback
+        - name: search
+          in: query
+          type: string
+          required: false
+          description: Search query
+        - name: status
+          in: query
+          type: string
+          required: false
+          description: 'Comma seperated default: 1,2'
+        - name: category_id
+          in: query
+          type: string
+          required: false
+          description: Filter by Category
+        - name: limit
+          in: query
+          type: integer
+          required: false
+          description: 'Result limit, default 25'
+        - name: offset
+          in: query
+          type: integer
+          required: false
+          description: 'Result offset, default 0'
+      produces:
+        - application/json
+        - application/javascript
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/CatalogCluster'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/StatusResponse'
+
+
+  /user:
+    get:
+      tags:
+        - user
+      summary: User data
+      parameters:
+        - name: callback
+          in: query
+          type: string
+          required: false
+          description: JSONP callback
+        - name: search
+          in: query
+          type: string
+          required: false
+          description: Search string
+        - name: client_id
+          in: query
+          type: integer
+          required: false
+          description: Client ID
+        - name: only_active
+          in: query
+          type: boolean
+          required: false
+          description: Default true
+        - name: limit
+          in: query
+          type: integer
+          required: false
+          description: 'Result limit, default 25'
+        - name: offset
+          in: query
+          type: integer
+          required: false
+          description: 'Result offset, default 0'
+      produces:
+        - application/json
+        - application/javascript
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/User'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/StatusResponse'
+    post:
+      tags:
+        - user
+      consumes:
+        - multipart/form-data
+      parameters:
+        - name: username
+          in: formData
+          type: string
+          required: true
+          description: Username
+        - name: name
+          in: formData
+          type: string
+          required: true
+          description: Fullname
+        - name: email
+          in: formData
+          type: string
+          required: true
+          description: Email address
+        - name: password
+          in: formData
+          type: string
+          required: true
+          description: Password
+        - name: image
+          in: formData
+          type: file
+          required: false
+          description: Image file
+        - name: level
+          in: formData
+          type: string
+          required: true
+          description: 'Level: admin | user'
+        - name: active
+          in: formData
+          type: boolean
+          required: false
+          description: Default true
+      produces:
+        - application/json
+      responses:
+        default:
+          description: '200 OK, Saved'
+          schema:
+            $ref: '#/definitions/StatusResponse'
+  '/user/{id}':
+    get:
+      tags:
+        - user
+      parameters:
+        - name: callback
+          in: query
+          type: string
+          required: false
+          description: JSONP callback
+        - name: id
+          in: path
+          type: string
+          required: true
+          description: User ID
+      produces:
+        - application/json
+        - application/javascript
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/User'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/StatusResponse'
+    post:
+      tags:
+        - user
+      summary: Update user
+      consumes:
+        - multipart/form-data
+      parameters:
+        - name: id
+          in: path
+          type: string
+          required: true
+          description: User ID
+        - name: username
+          in: formData
+          type: string
+          required: false
+          description: Username
+        - name: name
+          in: formData
+          type: string
+          required: false
+          description: Fullname
+        - name: email
+          in: formData
+          type: string
+          required: false
+          description: Email address
+        - name: password
+          in: formData
+          type: string
+          required: false
+          description: Password
+        - name: image
+          in: formData
+          type: file
+          required: false
+          description: Image file
+        - name: level
+          in: formData
+          type: string
+          required: false
+          description: 'Level: admin | user'
+        - name: active
+          in: formData
+          type: boolean
+          required: false
+          description: Default true
+      produces:
+        - application/json
+      responses:
+        default:
+          description: 200 OK, Updated
+          schema:
+            $ref: '#/definitions/StatusResponse'
+    delete:
+      tags:
+        - user
+      summary: Delete user
+      parameters:
+        - name: callback
+          in: query
+          type: string
+          required: false
+          description: JSONP callback
+        - name: id
+          in: path
+          type: string
+          required: true
+          description: User ID
+        - name: confirm_id
+          in: query
+          type: integer
+          required: true
+          description: Confirm User ID
+      produces:
+        - application/json
+      responses:
+        default:
+          description: 200 OK, Deleted
+          schema:
+            $ref: '#/definitions/StatusResponse'
+
+  /store:
+    get:
+      tags:
+        - store
+      responses:
+        '200':
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Order'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/StatusResponse'
+    post:
+      tags:
+        - store
+      responses:
+        '200':
+          description: OK
+  '/store/{order_id}':
+    delete:
+      tags:
+        - store
+      parameters:
+      - name: order_id
+        type: integer
+        in: path
+        required: true
+        description: Order ID
+      responses:
+        default:
+          description: 200 OK, Deleted
+          schema:
+            $ref: '#/definitions/StatusResponse'
+
+  /client:
+    get:
+      tags:
+        - client
+      summary: 'Client data'
+      parameters:
+        - name: callback
+          in: query
+          type: string
+          required: false
+          description: JSONP callback
+        - name: search
+          in: query
+          type: string
+          required: false
+          description: Search query
+        - name: active
+          in: query
+          type: boolean
+          required: false
+          description: Default true
+        - name: limit
+          in: query
+          type: integer
+          required: false
+          description: 'Result limit, default 25'
+        - name: offset
+          in: query
+          type: integer
+          required: false
+          description: 'Result offset, default 0'
+      produces:
+        - application/json
+        - application/javascript
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Client'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/StatusResponse'
+    post:
+      tags:
+        - client
+      summary: Add new Client
+      consumes:
+        - multipart/form-data
+      parameters:
+        - name: company
+          in: formData
+          type: string
+          required: true
+          description: Company Name
+        - name: image
+          in: formData
+          type: file
+          required: false
+          description: Image file
+        - name: active
+          in: formData
+          type: boolean
+          required: false
+          description: Active, default true
+      produces:
+        - application/json
+      responses:
+        default:
+          description: '200 OK, Saved'
+          schema:
+            $ref: '#/definitions/StatusResponse'
+  '/client/{id}':
+    get:
+      tags:
+        - client
+      parameters:
+        - name: callback
+          in: query
+          type: string
+          required: false
+          description: JSONP callback
+        - name: id
+          in: path
+          type: integer
+          required: true
+          description: Client ID
+      produces:
+        - application/json
+        - application/javascript
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/Client'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/StatusResponse'
+    post:
+      tags:
+        - client
+      summary: Update Client
+      consumes:
+        - multipart/form-data
+      parameters:
+        - name: id
+          in: path
+          type: integer
+          required: true
+          description: Client ID
+        - name: company
+          in: formData
+          type: string
+          required: false
+          description: Company Name
+        - name: image
+          in: formData
+          type: file
+          required: false
+          description: Image file
+        - name: active
+          in: formData
+          type: boolean
+          required: false
+          description: Active
+      produces:
+        - application/json
+      responses:
+        default:
+          description: '200 OK, Updated'
+          schema:
+            $ref: '#/definitions/StatusResponse'
+    delete:
+      tags:
+        - client
+      parameters:
+        - name: callback
+          in: query
+          type: string
+          required: false
+          description: JSONP callback
+        - name: id
+          in: path
+          type: integer
+          required: true
+          description: Client ID
+        - name: confirm_id
+          in: query
+          type: integer
+          required: true
+          description: Confirm Client ID
+      produces:
+        - application/json
+        - application/javascript
+      responses:
+        default:
+          description: 200 OK, Deleted
+          schema:
+            $ref: '#/definitions/StatusResponse'
+
+  /graph:
+    get:
+      tags:
+        - graph
+      summary: Graph data
+      parameters:
+        - name: callback
+          in: query
+          type: string
+          required: false
+          description: JSONP callback
+        - name: limit
+          in: query
+          type: integer
+          required: false
+          description: 'Result limit, default 25'
+        - name: offset
+          in: query
+          type: integer
+          required: false
+          description: 'Result offset, default 0'
+      produces:
+        - application/json
+        - application/javascript
+      responses:
+        '200':
+          description: Tag data
+          schema:
+            $ref: '#/definitions/GraphResult'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/StatusResponse'
+    post:
+      tags:
+        - graph
+      summary: Add new Graph
+      consumes:
+        - application/x-www-form-urlencoded
+      parameters:
+        - name: user_id
+          in: formData
+          type: integer
+          required: true
+          description: user_id from User
+        - name: folder_data_id
+          in: formData
+          type: integer
+          required: true
+          description: folder_data_id from Folder Data
+        - name: title
+          in: formData
+          type: string
+          required: true
+          description: title from Graph
+        - name: json
+          in: formData
+          type: string
+          required: true
+          description: json from Graph 
+      produces:
+        - application/json
+      responses:
+        default:
+          description: '200 OK, Saved'
+          schema:
+            $ref: '#/definitions/StatusResponse'
+  '/graph/{id}':
+    get:
+      tags:
+        - graph
+      parameters:
+        - name: callback
+          in: query
+          type: string
+          required: false
+          description: JSONP callback
+        - name: id
+          in: path
+          type: string
+          required: true
+          description: Graph ID
+      produces:
+        - application/json
+        - application/javascript
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/Graph'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/StatusResponse'
+    post:
+      tags:
+        - graph
+      summary: Update Graph
+      consumes:
+        - application/x-www-form-urlencoded
+      parameters:
+        - name: id
+          in: path
+          type: string
+          required: true
+          description: Graph ID
+        - name: user_id
+          in: formData
+          type: integer
+          required: true
+          description: user_id from User
+        - name: folder_data_id
+          in: formData
+          type: integer
+          required: true
+          description: folder_data_id from Folder Data
+        - name: title
+          in: formData
+          type: string
+          required: true
+          description: title from Graph
+        - name: json
+          in: formData
+          type: string
+          required: true
+          description: json from Graph 
+      produces:
+        - application/json
+      responses:
+        default:
+          description: '200 OK, Updated'
+          schema:
+            $ref: '#/definitions/StatusResponse'
+    delete:
+      tags:
+        - graph
+      summary: Delete Graph
+      parameters:
+        - name: callback
+          in: query
+          type: string
+          required: false
+          description: JSONP callback
+        - name: id
+          in: path
+          type: integer
+          required: true
+          description: Graph ID
+        - name: confirm_id
+          in: query
+          type: integer
+          required: true
+          description: Confirm Graph ID
+      produces:
+        - application/json
+        - application/javascript
+      responses:
+        default:
+          description: '200 OK, Deleted'
+          schema:
+            $ref: '#/definitions/StatusResponse'
+
+securityDefinitions:
+  Token:
+    type: apiKey
+    name: Token
+    in: header
+
+definitions:
+  AreaResult:
+    type: object
+    properties:
+      total:
+        type: integer
+      total_page:
+        type: integer
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/Area'
+  Area:
+    type: object
+    properties:
+      id:
+        type: integer
+      title:
+        type: string
+      sequence:
+        type: integer
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
+  GraphResult:
+    type: object
+    properties:
+      total:
+        type: integer
+      total_page:
+        type: integer
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/Graph'
+  Graph:
+    type: object
+    properties:
+      id:
+        type: integer
+      user_id:
+        type: integer
+      folder_data_id:
+        type: integer
+      title:
+        type: string
+      json:
+        type: string
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
+      deleted_at:
+        type: string
+        format: date-time  
+  CategoryResult:
+    type: object
+    properties:
+      total:
+        type: integer
+      total_page:
+        type: integer
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/Category'
+  Category:
+    type: object
+    properties:
+      id:
+        type: integer
+      title:
+        type: string
+      image_url:
+        type: string
+      sequence:
+        type: integer
+      active:
+        type: boolean
+      childs:
+        type: array
+        items:
+          $ref: '#/definitions/Category'
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
+  CategorySingle:
+    type: object
+    properties:
+      id:
+        type: integer
+      title:
+        type: string
+      image_url:
+        type: string
+      sequence:
+        type: integer
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
+  CatalogResult:
+    type: object
+    properties:
+      total:
+        type: integer
+      total_page:
+        type: integer
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/Catalog'
+  Catalog:
+    type: object
+    properties:
+      id:
+        type: integer
+      title:
+        type: string
+      excerpt:
+        type: string
+      description:
+        type: string
+        description: MEDIUM TEXT
+      source_text:
+        type: string
+      source_url:
+        type: string
+      status:
+        type: integer
+        description: '0: disabled, 1: active, 2 public'
+      map_enable:
+        type: boolean
+      owned:
+        type: boolean
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
+      category:
+        $ref: '#/definitions/CategorySingle'
+      tags:
+        type: array
+        items:
+          $ref: '#/definitions/Tag'
+      areas:
+        type: array
+        items:
+          $ref: '#/definitions/CatalogArea'
+  CatalogArea:
+    type: object
+    properties:
+      id:
+        type: integer
+      title:
+        type: string
+      sequence:
+        type: integer
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
+      data:
+        $ref: '#/definitions/CatalogData'
+  CatalogData:
+    type: object
+    properties:
+      id:
+        type: integer
+      res_uuid_1:
+        type: string
+        description: 'CKAN resource UUID 1'
+      res_uuid_2:
+        type: string
+        description: 'CKAN resource UUID 1'
+      res_uuid_3:
+        type: string
+        description: 'CKAN resource UUID 1'
+      res_uuid_4:
+        type: string
+        description: 'CKAN resource UUID 1'
+      res_uuid_5:
+        type: string
+        description: 'CKAN resource UUID 1'
+      title:
+        type: string
+        description: CKAN resource title
+      column_names:
+        type: string
+        description: '[{orig, alias, dimension}, ...]'
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
+  CatalogAutocomplete:
+    type: object
+    properties:
+      id:
+        type: integer
+      title:
+        type: string
+
+  Client:
+    type: object
+    properties:
+      id:
+        type: integer
+      company:
+        type: string
+        description: Company name
+      image_url:
+        type: string
+      active:
+        type: boolean
+      created_at:
+        type: string
+        format: datetime
+      updated_at:
+        type: string
+        format: date-time
+  Cluster:
+    type: object
+    properties:
+      id:
+        type: integer
+      title:
+        type: string
+      description:
+        type: string
+      status:
+        type: integer
+        description: '0: disabled, 1: active, 2 public'
+      category:
+        $ref: '#/definitions/Category'
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/ClusterData'
+      created_at:
+        type: string
+        format: datetime
+      updated_at:
+        type: string
+        format: date-time
+  ClusterData:
+    type: object
+    properties:
+      id:
+        type: integer
+      title:
+        type: string
+      sequence:
+        type: integer
+      catalog:
+        $ref: '#/definitions/Catalog'
+      created_at:
+        type: string
+        format: datetime
+      updated_at:
+        type: string
+        format: date-time
+  CatalogCluster:
+    type: object
+    properties:
+      title:
+        type: string
+      description:
+        type: string
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/CatalogClusterDetail'
+  CatalogClusterDetail:
+    type: object
+    properties:
+      id:
+        type: integer
+        description: Category ID
+      title:
+        type: string
+  Tag:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+      title:
+        type: string
+      created_at:
+        type: string
+        format: datetime
+      updated_at:
+        type: string
+        format: date-time
+  User:
+    type: object
+    properties:
+      id:
+        type: integer
+      username:
+        type: string
+      name:
+        type: string
+      email:
+        type: string
+      image_url:
+        type: string
+      level:
+        type: string
+        enum:
+          - admin
+          - ae
+          - user-admin
+          - user
+      active:
+        type: boolean
+      client:
+        $ref: '#/definitions/Client'
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
+  AuthUser:
+    type: object
+    properties:
+      id:
+        type: integer
+      username:
+        type: string
+      name:
+        type: string
+      email:
+        type: string
+      image_url:
+        type: string
+      level:
+        type: string
+        enum:
+          - admin
+          - user
+      token:
+        type: string
+        description: Current device will have same token
+      client:
+        $ref: '#/definitions/Client'
+      devices:
+        type: array
+        items:
+          $ref: '#/definitions/AuthUserDevice'
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
+  AuthUserDevice:
+    type: object
+    properties:
+      id:
+        type: integer
+      user_agent:
+        type: string
+      ip_address:
+        type: string
+      token:
+        type: string
+  WhAutocomplete:
+    type: object
+    properties:
+      name:
+        type: string
+        description: slug-formatted-dataset-name
+      title:
+        type: string
+        description: Dataset title
+  WhDataset:
+    type: object
+    properties:
+      uuid:
+        type: string
+        description: CKAN Dataset UUID
+      name:
+        type: string
+      title:
+        type: string
+      notes:
+        type: string
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
+      resources:
+        type: array
+        items:
+          $ref: '#/definitions/WhResource'
+  WhResource:
+    type: object
+    properties:
+      uuid:
+        type: string
+        description: CKAN Resource UUID
+      title:
+        type: string
+      file_url:
+        type: string
+      description:
+        type: string
+        description: 'Long description, markdown?'
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
+  WhCategory:
+    type: object
+    properties:
+      uuid:
+        type: string
+        description: CKAN Category UUID
+      name:
+        type: string
+        description: slug-name-of-category
+      title:
+        type: string
+  Order:
+    type: object
+    properties:
+      id:
+        type: integer
+      user:
+        $ref: '#/definitions/User'
+      status:
+        type: integer
+        description: '0: new, 1: done, 2: cancel'
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/OrderData'
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
+  OrderData:
+    type: object
+    properties:
+      id:
+        type: integer
+      catalog:
+        $ref: '#/definitions/Catalog'
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
+  StatusResponse:
+    type: object
+    properties:
+      code:
+        type: integer
+        description: >-
+          HTTP status code:
+          https://en.wikipedia.org/wiki/List_of_HTTP_status_codes
+      message:
+        type: string
+
+externalDocs:
+  description: 'Dev Server: https://dev.lokadata.id/'
+  url: 'https://dev.lokadata.id/'
